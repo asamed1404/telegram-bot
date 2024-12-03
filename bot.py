@@ -22,3 +22,4 @@ dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
 # Запуск бота
 updater.start_polling()
 updater.idle()
+updater.start_polling()
