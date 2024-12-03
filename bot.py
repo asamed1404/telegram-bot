@@ -1,25 +1,28 @@
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import ApplicationBuilder, MessageHandler, filters
 import openai
 
 # Укажите API-ключ OpenAI
 openai.api_key = "ВАШ_API_КЛЮЧ"
 
 # Функция обработки сообщений
-def handle_message(update, context):
+async def handle_message(update, context):
     user_input = update.message.text
     prompt = f"Баллы абитуриента: {user_input}\n{PROMPT}"
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    update.message.reply_text(response['choices'][0]['message']['content'])
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        await update.message.reply_text(response['choices'][0]['message']['content'])
+    except Exception as e:
+        await update.message.reply_text("Произошла ошибка при обработке вашего запроса.")
 
 # Настройка бота
-updater = Updater("ВАШ_TELEGRAM_API_TOKEN")
-dp = updater.dispatcher
-dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+application = ApplicationBuilder().token("ВАШ_TELEGRAM_API_TOKEN").build()
+
+# Добавление обработчика сообщений
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 # Запуск бота
-updater.start_polling()
-updater.idle()
-updater.start_polling()
+if __name__ == "__main__":
+    application.run_polling()
